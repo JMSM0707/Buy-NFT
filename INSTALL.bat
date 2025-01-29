@@ -1,2 +1,2 @@
-pip install solana requests
+pip install -r requirements.txt
 pause
