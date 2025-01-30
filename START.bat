@@ -1,2 +1,2 @@
-python buy_nft.py
+python nft.py
 pause
