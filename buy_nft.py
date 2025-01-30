@@ -5,6 +5,7 @@ from solana.rpc.api import Client
 from solana.keypair import Keypair
 from solana.transaction import Transaction
 from solana.rpc.types import TxOpts
+from solana.system_program import transfer
 
 # Настройки
 API_URL = "https://api.mainnet-beta.solana.com"  # URL для Solana
@@ -33,13 +34,28 @@ def buy_nft(nft_mint_address):
 
     if price <= MIN_PRICE:
         print("Покупка NFT...")
-        # Создание транзакции для покупки (примерный код, нужно адаптировать под конкретный контракт)
-        transaction = Transaction()
+        seller_address = nft_info["data"]["seller"]  # Предполагается, что в API есть поле 'seller'
 
-        # Здесь должен быть код, который создает и подписывает транзакцию
-        # ...
+        # Создание транзакции для покупки
+        transaction = Transaction()
+        
+        # Конвертация цены в лампорты (1 SOL = 1e9 лампортов)
+        lamports = int(price * 1e9)
+
+        # Добавление операции перевода SOL
+        transaction.add(
+            transfer({
+                'from_pubkey': keypair.public_key,
+                'to_pubkey': seller_address,  # адрес продавца
+                'lamports': lamports
+            })
+        )
+
+        # Подписываем транзакцию
+        transaction.sign(keypair)
 
         try:
+            # Отправка транзакции
             signature = client.send_transaction(transaction, keypair, opts=TxOpts(skip_preflight=True))
             print(f"Транзакция успешна с подписью: {signature}")
         except Exception as e:
